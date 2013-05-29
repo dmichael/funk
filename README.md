@@ -6,21 +6,24 @@ A port of Underscore.js function functions to Go
 ### Throttle
 
 ```Go
-func notifyError(message string) {
+import "github.com/dmichael/funk"
+
+// The func to be throttled
+func notify(message string) {
   // ping remote service or something with a message
 }
 
 func main(){
-  var throttledNotifyError func(string, int)
+  // funk needs a var to populate with the 'throttled' func,
+  // it must be the same signature of the func to throttle
+  var throttled func(string)
 
-  Throttle(notifyError, &throttledNotifyError, 100)
+  funk.Throttle(notify, &throttled, 100)
 
   // Only fired once
   for i := 0; i < 1000; i++ {
-    throttledNotifyError("Oops! Something went wrong!")
+    throttled("Oops! Something went wrong!")
   }
   
 }
-
-
 ```
