@@ -1,7 +1,9 @@
 funk
 ====
 
-A port of Underscore.js function functions to Go
+A port of Underscore.js function functions to Go.
+
+If you would like to contribute, please fork the project and issue a pull request.
 
 ### Throttle
 
