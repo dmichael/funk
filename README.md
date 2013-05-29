@@ -6,6 +6,10 @@ A port of Underscore.js function functions to Go.
 If you would like to contribute, please fork the project and issue a pull request.
 
 ### Throttle
+```Go
+func Throttle(fn interface{}, fnptr interface{}, milliseconds int)
+```
+Throttle returns a function that will only execute the original at most once per interval specified. It currently only accepts funcs with **no** return values. If you send it a func with a return value it will panic. Additionally, it does not distinguish which values you call it with, wrapping only the first one.
 
 ```Go
 import "github.com/dmichael/funk"
@@ -29,3 +33,14 @@ func main(){
   
 }
 ```
+
+TODO: 
+
+### Delay
+TODO
+
+### Debounce
+TODO
+
+### Once
+TODO
