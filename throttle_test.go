@@ -18,63 +18,31 @@ var _ = Suite(&MySuite{})
 func (s *MySuite) SetUpSuite(c *C) {
 }
 
-var count = 0
-
-func MyThrottledFunc(message string){
-  count += 1
-}
-
 func (s *MySuite) TestThrottle(c *C) {
-  f := Throttle(MyThrottledFunc, 1000)
-  f("TESTES 0")
-  time.Sleep(500 * time.Millisecond)
-  f("TESTES 1")
-  f("TESTES 1")
-  time.Sleep(500 * time.Millisecond)
-  f("TESTES 2")
-  f("TESTES 2")
-  f("TESTES 2")
-  f("TESTES 2")
-  f("TESTES 2")
-  f("TESTES 2")
-  time.Sleep(500 * time.Millisecond)
-  f("TESTES 3")
-  time.Sleep(500 * time.Millisecond)
-  f("TESTES 4")
-
-  // Give the test time to complete
-  time.Sleep(2 * time.Second)
-
-  // Count should only be incremented by 5
-  c.Assert(count, Equals, 5)
-}
-
-func ThrottleThis(message string, y int) {
-  count2 += 1
-}
-
-var count2 = 0
-
-func (s *MySuite) TestThrottle2(c *C) {
   // Create the throttled func
-  var throttled func(string, int)
-  Throttle2(ThrottleThis, &throttled, 100)
+  throttled := Throttle{wait: 100 * time.Millisecond}
+  count := 0
 
-  for i := 0; i < 10; i++ {
-    throttled("x", 6)
+  for i := 0; i < 1000; i++ {
+    throttled.Do(func() { count +=1 })
+    throttled.Do(func() { count +=1 })
   }
 
   time.Sleep(120 * time.Millisecond)
-
-  for i := 0; i < 10; i++ {
-    throttled("x", 6)
-  }
-
-
-
-  // Give the test time to complete
-  time.Sleep(120 * time.Millisecond)
-  c.Assert(count2, Equals, 2)
+  c.Assert(count, Equals, 1)
 }
 
 
+func (s *MySuite) TestThrottleConcurrent(c *C) {
+  // Create the throttled func
+  throttled := Throttle{wait: 500 * time.Millisecond}
+  count := 0
+
+  for i := 0; i < 100; i++ {
+    go throttled.Do(func() { count += 1 })
+  }
+
+  // Give the test time to complete
+  time.Sleep(510 * time.Millisecond)
+  c.Assert(count, Equals, 1)
+}

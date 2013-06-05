@@ -1,45 +1,27 @@
 package funk
 
 import (
-  "reflect"
+  "sync/atomic"
   "time"
 )
 
-func Throttle(fn interface{}, fnptr interface{}, milliseconds int) {
-  ff := reflect.ValueOf(fn)
-  ft := ff.Type()
-  throttling := false
+// Once is an object that will perform exactly one action.
+type Throttle struct {
+  waiting int32
+  wait    time.Duration
+}
 
-  if ft.NumOut() > 0 {
-    panic("Throttled funcs may not have return values!")
+func (self *Throttle3) Do(fn func()) {
+  // If the swap was not successful, bounce out without execution
+  if !atomic.CompareAndSwapInt32(&self.waiting, 0, 1) {
+    return
   }
 
-  var out []reflect.Value
-
-  // This is the returned function
-  // MakeFunc requires this signature, however, the return values will be empty
-  prototype := func(in []reflect.Value) []reflect.Value {
-    // Already called
-    if throttling { return out }
-
-    countdown := func() {
-      time.AfterFunc(time.Duration(milliseconds) * time.Millisecond, func() {
-        throttling = false
-        // Call the original func that was passed in.
-        // We dont care about the output since it cannot be returned
-        ff.Call(in)
-      })
-    }
-
-    throttling = true
-    go countdown()
-
-    return out
-  }
-
-  // Create a function that wraps the original
-  v := reflect.MakeFunc(ft, prototype)
-
-  // Set pointer to function that was passed in to the created function
-  reflect.ValueOf(fnptr).Elem().Set(v)
+  // After the elapsed wait time, execute the input function and open the lock
+  go func() {
+    time.AfterFunc(self.wait, func() {
+      fn()
+      atomic.StoreInt32(&self.waiting, 0)
+    })
+  }()
 }
