@@ -11,7 +11,7 @@ type Throttle struct {
   wait    time.Duration
 }
 
-func (self *Throttle3) Do(fn func()) {
+func (self *Throttle) Do(fn func()) {
   // If the swap was not successful, bounce out without execution
   if !atomic.CompareAndSwapInt32(&self.waiting, 0, 1) {
     return
