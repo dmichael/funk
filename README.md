@@ -6,30 +6,29 @@ A port of Underscore.js function functions to Go.
 If you would like to contribute, please fork the project and issue a pull request.
 
 ### Throttle
-```Go
-func Throttle(fn interface{}, fnptr interface{}, milliseconds int)
-```
-Throttle returns a function that will only execute the original at most once per interval specified. It currently only accepts funcs with **no** return values. If you send it a func with a return value it will panic. Additionally, it does not distinguish which values you call it with, wrapping only the first one.
+
+Throttle will only execute the passed in func at most once per interval specified. It does not distinguish which values you call it with, wrapping only the first one - you should manage this manually.
 
 ```Go
 import "github.com/dmichael/funk"
+import "fmt"
 
 // The func to be throttled
-func notify(message string) {
-  // ping remote service or something with a message
+func RickJames(message string) {
+  fmt.Println(message)
 }
 
 func main(){
-  // funk needs a var to populate with the 'throttled' func,
-  // it must be the same signature of the func to throttle
-  var throttled func(string)
-
-  funk.Throttle(notify, &throttled, 100)
-
-  // Only fired once
-  for i := 0; i < 1000; i++ {
-    throttled("Oops! Something went wrong!")
+  throttled := Throttle{wait: 500 * time.Millisecond}
+  
+  // Do only accepts void funcs, so wrap it
+  for i := 0; i < 10; i++ {
+    // This is only triggered once after 500 ms elaspsed since first called
+    throttled.Do(func() { 
+      RickJames("Whoah-u-o-u-o-u sixty-nine")
+    })
   }
+  
   
 }
 ```
@@ -40,7 +39,4 @@ TODO:
 TODO
 
 ### Debounce
-TODO
-
-### Once
 TODO
